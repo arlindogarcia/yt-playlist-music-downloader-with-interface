@@ -14,7 +14,7 @@ def criaDiretorio(diretorio):
         os.makedirs(diretorio)
 
 def muliplosReplaces(texto):
-    for char in '/.:|,"#':
+    for char in '/.:;|,"#':
         texto = texto.replace(char, "")
     return texto
 
@@ -23,7 +23,8 @@ def main():
 
     layout = [
         [sg.Text('Link Playlist'), sg.Input(key='link', size=(99, 2))],
-        [sg.Text('Diretório'), sg.In(size=(93,1), enable_events=True ,key='diretorio'), sg.FolderBrowse()],
+        [sg.Text('Diretório'), sg.In(size=(94,1), enable_events=True ,key='diretorio'), sg.FolderBrowse()],
+        [sg.Button('Baixar'), sg.Button('Sair', button_color=('white', 'firebrick3'))],
         [
             sg.Table(
                 values=data, 
@@ -40,11 +41,10 @@ def main():
                 col_widths=[5,5,5,70],
                 vertical_scroll_only=True,
             )
-        ],
-        [sg.Button('Baixar'), sg.Button('Sair', button_color=('white', 'firebrick3'))]
+        ]
     ]
 
-    janela = sg.Window('Baixar Playlist de Músicas do YouTube', layout)
+    janela = sg.Window('Baixar Playlist de Músicas do YouTube', layout, size=(750,450))
 
     while True:
         evento, values = janela.Read()
