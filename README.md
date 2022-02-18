@@ -1,3 +1,5 @@
 # YouTube Playlist Downloader with Python
 
-- Script em phyton que baixa playlist de músicas do youtube
+- Python script that downloads youtube music playlist
+
+- Run python setup.py bdist_msi to create an executable
