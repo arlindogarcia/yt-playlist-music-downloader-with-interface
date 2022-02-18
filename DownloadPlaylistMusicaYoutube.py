@@ -1,3 +1,6 @@
+import ctypes
+# Retira console ao iniciar
+ctypes.windll.kernel32.FreeConsole()
 from pytube import YouTube
 from pytube import Playlist
 from datetime import date
@@ -14,7 +17,7 @@ def criaDiretorio(diretorio):
         os.makedirs(diretorio)
 
 def muliplosReplaces(texto):
-    for char in '/.:;|,"#':
+    for char in '/.:;|,\'"#':
         texto = texto.replace(char, "")
     return texto
 
@@ -23,12 +26,12 @@ def main():
 
     layout = [
         [sg.Text('Link Playlist'), sg.Input(key='link', size=(99, 2))],
-        [sg.Text('Diretório'), sg.In(size=(94,1), enable_events=True ,key='diretorio'), sg.FolderBrowse()],
+        [sg.Text('Diretório'), sg.In(size=(85,1), enable_events=True ,key='diretorio'), sg.FolderBrowse()],
         [sg.Button('Baixar'), sg.Button('Sair', button_color=('white', 'firebrick3'))],
         [
             sg.Table(
                 values=data, 
-                headings=['Atual','Total', '%', 'Música'], 
+                headings=['Item', '%', 'Música'], 
                 auto_size_columns=False,
                 justification='left',
                 num_rows=15, 
@@ -38,7 +41,7 @@ def main():
                 expand_x=True,
                 expand_y=True, 
                 key='table',
-                col_widths=[5,5,5,70],
+                col_widths=[6,5,74],
                 vertical_scroll_only=True,
             )
         ]
@@ -55,7 +58,7 @@ def main():
             diretorio_selecionado = values['diretorio']
 
             if diretorio_selecionado == "":
-                diretorio = os.getcwd() + "\\" + 'Musicas ' + date.today().strftime('%d-%m-%Y')
+                diretorio = os.path.join(os.path.expanduser("~\Desktop"), "Musicas " + date.today().strftime('%d-%m-%Y'))
                 janela.Element('diretorio').Update(diretorio)
                 janela.refresh()
             else:
@@ -86,12 +89,12 @@ def main():
 
                         # Caso o arquivo existir ir pra próxima música
                         if verificaArquivoExistente(diretorio + "\\" + muliplosReplaces(ys.title) + ".mp3"):
-                            data.append([str(item_atual), str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "JÁ EXISTE: " + ys.title])
+                            data.append([str(item_atual) + "/" + str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "JÁ EXISTE: " + ys.title])
                             janela.Element('table').Update(values=data, num_rows=len(data))
                             janela.refresh()
                             continue
                         else:
-                            data.append([str(item_atual), str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "BAIXADO: " + ys.title])
+                            data.append([str(item_atual) + "/" + str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "BAIXADO: " + ys.title])
                             janela.Element('table').Update(values=data, num_rows=len(data))
                             janela.refresh()
 
@@ -106,6 +109,6 @@ def main():
                     tkinter.messagebox.showinfo(title="Sucesso!", message="Downloads concluidos!")
 
                 except Exception as e:
-                    tkinter.messagebox.showerror(title="Erro", message="Erro: " + str(e))
+                    tkinter.messagebox.showerror(title="Erro", message="Erro! Verifique o link ou o diretório especificado.")
 
 main()
