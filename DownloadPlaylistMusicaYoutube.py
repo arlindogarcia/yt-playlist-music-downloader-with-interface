@@ -21,17 +21,72 @@ def muliplosReplaces(texto):
         texto = texto.replace(char, "")
     return texto
 
+def diretorioPadrao():
+    return os.path.join(os.path.expanduser("~\Desktop"), "Musicas " + date.today().strftime('%d-%m-%Y'))
+
 def main():
     data = []
 
     layout = [
-        [sg.Text('Link Playlist'), sg.Input(key='link', size=(99, 2))],
-        [sg.Text('Diretório'), sg.In(size=(85,1), enable_events=True ,key='diretorio'), sg.FolderBrowse()],
-        [sg.Button('Baixar'), sg.Button('Sair', button_color=('white', 'firebrick3'))],
+        [
+            sg.Text(
+                'Link Playlist',
+                size=(9)
+            ),
+            sg.Input(
+                key='link',
+                size=(99, 2)
+            )
+        ],
+        [
+            sg.Text(
+                'Diretório',
+                size=(9),
+            ),
+            sg.In(
+                size=(81,1),
+                enable_events=True,
+                key='diretorio',
+                readonly=True,
+                default_text=diretorioPadrao()
+            ),
+            sg.FolderBrowse()
+        ],
+        [
+            sg.Button(
+                'Baixar'
+            ),
+            sg.Button(
+                'Sair',
+                button_color=(
+                    'white',
+                    'firebrick3'
+                )
+            ),
+            sg.Text(
+                '0% - 0/0',
+                size=(15),
+                key='detalhe_progresso',
+                justification='right'
+            ),
+            sg.ProgressBar(
+                1,
+                orientation='h',
+                size=(55, 20),
+                bar_color=[
+                    'Green',
+                    'White'
+                ],
+                key='progresso',
+            )
+        ],
         [
             sg.Table(
                 values=data, 
-                headings=['Item', '%', 'Música'], 
+                headings=[
+                    'Status',
+                    'Música'
+                ], 
                 auto_size_columns=False,
                 justification='left',
                 num_rows=15, 
@@ -41,13 +96,17 @@ def main():
                 expand_x=True,
                 expand_y=True, 
                 key='table',
-                col_widths=[6,5,74],
+                col_widths=[8,77],
                 vertical_scroll_only=True,
             )
         ]
     ]
 
-    janela = sg.Window('Baixar Playlist de Músicas do YouTube', layout, size=(750,450))
+    janela = sg.Window(
+        'Baixar Playlist de Músicas do YouTube',
+        layout,
+        size=(750,450)
+    )
 
     while True:
         evento, values = janela.Read()
@@ -55,14 +114,7 @@ def main():
         if evento in ('Sair', None): break
         if evento == 'Baixar':
             link =  values['link']
-            diretorio_selecionado = values['diretorio']
-
-            if diretorio_selecionado == "":
-                diretorio = os.path.join(os.path.expanduser("~\Desktop"), "Musicas " + date.today().strftime('%d-%m-%Y'))
-                janela.Element('diretorio').Update(diretorio)
-                janela.refresh()
-            else:
-                diretorio = diretorio_selecionado
+            diretorio = values['diretorio']
 
             if link == "":
                 tkinter.messagebox.showerror(title="Erro", message="Preencha o link da playlist!")
@@ -85,18 +137,24 @@ def main():
 
                     for url in yt.video_urls:
                         item_atual += 1
+                        status_musica = ''
                         ys = YouTube(url)
 
                         # Caso o arquivo existir ir pra próxima música
                         if verificaArquivoExistente(diretorio + "\\" + muliplosReplaces(ys.title) + ".mp3"):
-                            data.append([str(item_atual) + "/" + str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "JÁ EXISTE: " + ys.title])
-                            janela.Element('table').Update(values=data, num_rows=len(data))
-                            janela.refresh()
-                            continue
+                            status_musica = 'JÁ EXISTE'
                         else:
-                            data.append([str(item_atual) + "/" + str(total_itens), str(round((item_atual*100)/total_itens,1)) + '%', "BAIXADO: " + ys.title])
-                            janela.Element('table').Update(values=data, num_rows=len(data))
-                            janela.refresh()
+                            status_musica = 'BAIXADO'
+
+                        # Atualiza tabela
+                        data.append([status_musica, ys.title])
+                        janela.Element('table').Update(values=data, num_rows=len(data))
+                        janela.Element('progresso').UpdateBar(item_atual, total_itens)
+                        janela.Element('detalhe_progresso').Update(str(round((item_atual*100)/total_itens,1)) + '% - ' + str(item_atual) + "/" + str(total_itens))
+                        janela.refresh()
+
+                        if (status_musica == 'JÁ EXISTE'):
+                            continue
 
                         # Baixa arquivo e pega diretório
                         arquivo_saida = ys.streams.get_audio_only().download(diretorio)
