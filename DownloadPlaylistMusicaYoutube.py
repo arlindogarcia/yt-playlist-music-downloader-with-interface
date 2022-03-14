@@ -17,7 +17,7 @@ def criaDiretorio(diretorio):
         os.makedirs(diretorio)
 
 def muliplosReplaces(texto):
-    for char in '/.:;|,\'"#':
+    for char in '/.:;|,\'"#$%':
         texto = texto.replace(char, "")
     return texto
 
